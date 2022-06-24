@@ -29,7 +29,7 @@ object Boot extends IOApp.Simple {
         }
       }
       .through {
-        _.drop(1) >>
+        _.drop(1) >> // without this drop (or maybe just something that reads from the input stream), the hang condition doesn't seem to be triggered
           Stream.raiseError(new RuntimeException("boom"))
       }
       .drain ++ Stream.eval(Console[F].println("😇 completed stream")).drain
