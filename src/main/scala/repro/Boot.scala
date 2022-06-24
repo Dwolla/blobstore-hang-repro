@@ -1,20 +1,19 @@
 package repro
 
 import cats.effect._
+import cats.effect.std.Console
 import cats.syntax.all._
 import fs2._
 import fs2.io.{readOutputStream, writeOutputStream}
-import org.typelevel.log4cats.Logger
-import org.typelevel.log4cats.slf4j.Slf4jLogger
 
 object Boot extends IOApp.Simple {
-  private def stream[F[_] : Logger : Async](size: Long): Stream[F, Nothing] =
+  private def stream[F[_] : Console : Async](size: Long): Stream[F, Nothing] =
     Stream
       .repeatEval(Array.fill(10.megabytes)(Byte.MinValue).pure[F])
       .map(Chunk.array(_))
       .zipWithIndex
       .evalMap { case (c, idx) =>
-        Logger[F].info(s"👀 processing chunk #$idx of ${c.size} bytes")
+        Console[F].println(s"👀 processing chunk #$idx of ${c.size} bytes")
           .as(c)
       }
       .flatMap(Stream.chunk)
@@ -26,22 +25,20 @@ object Boot extends IOApp.Simple {
             .through(writeOutputStream(out.pure[F], closeAfterUse = true))
             .compile
             .drain
-            .flatTap(_ => Logger[F].info("✍️ writeOutputStream complete"))
+            .flatTap(_ => Console[F].println("✍️ writeOutputStream complete"))
         }
       }
       .through {
         _.drop(1) >>
           Stream.raiseError(new RuntimeException("boom"))
       }
-      .drain ++ Stream.eval(Logger[F].info("😇 completed stream")).drain
+      .drain ++ Stream.eval(Console[F].println("😇 completed stream")).drain
 
-  private def runF[F[_] : Async : Logger]: Stream[F, Unit] =
+  private def runF[F[_] : Async : Console]: Stream[F, Unit] =
     stream(1.gigabyte) ++ Stream.emit(())
 
   override def run: IO[Unit] =
-    Slf4jLogger.create[IO].flatMap { implicit logger =>
-      runF[IO].compile.drain
-    }
+    runF[IO].compile.drain
 
   implicit class MBOps(val i: Int) extends AnyVal {
     def megabyte: Int = i * 1024 * 1024
