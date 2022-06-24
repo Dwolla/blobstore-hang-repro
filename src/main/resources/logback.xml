@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%date | log_level=%-5level | logger=%logger | log_thread=%thread | log_message='%msg'%n</pattern>
+        </encoder>
+    </appender>
+
+    <logger name="io.netty">
+        <level value="INFO" />
+    </logger>
+
+    <logger name="software.amazon.awssdk">
+        <level value="DEBUG" />
+    </logger>
+
+    <logger name="software.amazon.awssdk.auth">
+        <level value="INFO" />
+    </logger>
+
+    <logger name="software.amazon.awssdk.core">
+        <level value="INFO" />
+    </logger>
+
+    <root level="DEBUG">
+        <appender-ref ref="STDOUT"/>
+    </root>
+</configuration>

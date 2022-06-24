@@ -1,0 +1,8 @@
+.idea/
+.bsp/
+.DS_Store
+target/
+boot/
+lib_managed/
+src_managed/
+project/plugins/project/
